@@ -1,13 +1,22 @@
 import { random, randomSeed } from "./Utilis";
 
+interface Config {
+    hidden_layers: Array<number>;
+    inputs:  Array<number>;
+    outputs: number;
+}
+
 export class Network {
     weights = new Array<number>();
     result = new Array<number>();
     inputs = new Array<number>();
     layers = new Array<number>();
-    constructor(inputs: Array<number>, layers: Array<number>) {
-        this.inputs = inputs;
-        this.layers = layers;
+    constructor(config: Config) {
+        this.inputs = config.inputs;
+        this.layers.push(config.inputs.length);
+        this.layers = [...this.layers, ...config.hidden_layers];
+        this.layers.push(config.outputs);
+        console.log("Layers: " + this.layers);
     }
 
     initialize() {
