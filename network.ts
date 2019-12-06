@@ -3,7 +3,7 @@ import { random, randomSeed } from "./Utilis";
 interface NetworkConfig {
     hidden_layers: Array<number>;
     inputs: Array<number>;
-    outputs: number;
+    outputs: Array<number>;
 }
 
 export class Network {
@@ -11,11 +11,13 @@ export class Network {
     private result: Array<number> = [];
     private inputs: Array<number> = [];
     private layers: Array<number> = [];
+    private outputs: Array<number> = [];
     constructor(config: NetworkConfig) {
         this.inputs = config.inputs;
+        this.outputs = config.outputs;
         this.layers.push(config.inputs.length);
         this.layers = [...this.layers, ...config.hidden_layers];
-        this.layers.push(config.outputs);
+        this.layers.push(config.outputs.length);
     }
 
     getWeights(): Array<number> {
@@ -30,6 +32,16 @@ export class Network {
         return this.result;
     }
 
+    error(): number {
+        if (this.result.length <= 0) throw new Error("Result should be calculated first");
+        if (this.result.length !== this.outputs.length) throw new Error("Result array should have same length as Output array");
+        let errorValue = 0;
+        for (var i = 0; i < this.result.length; i++) {
+            errorValue += Math.abs(this.result[i] - this.outputs[i]);
+        }
+        return errorValue / this.result.length;
+    }
+
     create() {
         if (this.weights.length > 0) {
             throw new Error("Network already created");
@@ -38,7 +50,7 @@ export class Network {
         for (var i = 0; i < this.layers.length; i++) {
             for (var j = 0; j < this.layers[i + 1]; j++) {
                 for (var k = 0; k < this.layers[i]; k++) {
-                    this.weights.push(randomSeed(++z));
+                    this.weights.push(random());
                 }
             }
         }
