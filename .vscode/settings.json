@@ -1,5 +1,6 @@
 {
     "python.pythonPath": "C:\\Users\\micha\\AppData\\Local\\Programs\\Python\\Python38-32\\python.exe",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "debug.node.autoAttach": "off"
 }
