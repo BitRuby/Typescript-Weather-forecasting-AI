@@ -11,7 +11,7 @@ interface GeneticConfig {
     tournamentSize: number,
     crossoverProbability: number,
     crossoverPoint: number,
-    mutateProbability: number
+    mutateProbability: number,
 }
 export class GeneticOptimalization {
     private population: Array<Network> = [];
@@ -82,6 +82,7 @@ export class GeneticOptimalization {
             });
             newPopulation.push(bestIndividual);
         }
+        this.population = newPopulation;
         return newPopulation;
     }
 
@@ -106,10 +107,20 @@ export class GeneticOptimalization {
     }
 
     mutate(propability: number) {
+        let a: number, b: number, randomGene: number, newChromosome: Array<number>;
         for (var i = 0; i < this.population.length; i++) {
-            if (propability <= random()) {
-                var index = Math.floor(random() * this.population[i].getWeights().length);
-                this.population[i].getWeights()[index] = Math.abs(1 - this.population[i].getWeights()[index]);
+            if (propability >= random()) {
+                a = this.population[i].getWeights()[0];
+                b = this.population[i].getWeights()[this.population[i].getWeights().length-1];
+                randomGene = Math.floor(random() * this.population[i].getWeights().length);
+                newChromosome = this.population[i].getWeights();
+                if (0.5 >= random()) {
+                    newChromosome[randomGene] = a;
+                }
+                else {
+                    newChromosome[randomGene] = b;
+                }
+                this.population[i].setWeights(newChromosome);
             }
         }
     }
@@ -117,12 +128,10 @@ export class GeneticOptimalization {
     startEvolving() {
         for (let i = 0; i < this.generations; i++) {
             console.log("Generation: " + i + ". Score: " + this.grade());
-            this.population = this.selection(this.tournamentSize);
+            this.selection(this.tournamentSize);
             this.crossover(this.crossoverProbability, this.crossoverPoint);
             this.mutate(this.mutateProbability);
         }
     }
-
-
 
 }

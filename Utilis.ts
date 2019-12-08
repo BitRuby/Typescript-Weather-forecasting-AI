@@ -19,3 +19,7 @@ export const renormalize = (Tn: number, Tmin: number, Tmax: number) => {
 export const sigmoid = (t: number) => {
     return 1 / (1 + Math.pow(Math.E, -t));
 }
+
+export const getInNewRange = (value: number, oldMin: number, oldMax: number, newMin: number, newMax: number) => {
+    return (((value - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
+}
