@@ -1,4 +1,4 @@
-import { random, randomSeed } from "./Utilis";
+import { random, sigmoid } from "./Utilis";
 
 interface NetworkConfig {
     hidden_layers: Array<number>;
@@ -25,7 +25,7 @@ export class Network {
     }
 
     setWeights(weights: Array<number>) {
-        this.weights = weights;
+        this.weights = [...weights];
     }
 
     getResult(): Array<number> {
@@ -33,7 +33,7 @@ export class Network {
     }
 
     error(): number {
-        if (this.result.length <= 0) throw new Error("Result should be calculated first");
+        if (this.result.length <= 0) throw new Error("Result should be calculated first. Use grade function");
         if (this.result.length !== this.outputs.length) throw new Error("Result array should have same length as Output array");
         let errorValue = 0;
         for (var i = 0; i < this.result.length; i++) {
@@ -63,7 +63,7 @@ export class Network {
             for (var j = 0; j < this.layers[i]; j++) {
                 for (var k = 0; k < this.layers[i - 1]; k++) {
                     if (i === 1) this.result[k] = this.inputs[k];
-                    outputs[j] += this.weights[z++] * this.result[k];
+                    outputs[j] += sigmoid(this.weights[z++] * this.result[k]);
                 }
             }
             this.result = [...outputs];

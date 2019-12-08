@@ -1,4 +1,5 @@
 import { Network } from "./Network";
+import { random } from "./Utilis";
 
 interface GeneticConfig {
     population_size: number;
@@ -6,8 +7,12 @@ interface GeneticConfig {
     hidden_layers: Array<number>;
     inputs: Array<number>;
     outputs: Array<number>;
+    activationMethod: string,
+    tournamentSize: number,
+    crossoverProbability: number,
+    crossoverPoint: number,
+    mutateProbability: number
 }
-
 export class GeneticOptimalization {
     private population: Array<Network> = [];
     private population_size: number = 10;
@@ -15,12 +20,22 @@ export class GeneticOptimalization {
     private hidden_layers: Array<number> = [];
     private inputs: Array<number> = [1, 1];
     private outputs: Array<number> = [1, 0];
+    private activationMethod: string = "sigmoid";
+    private tournamentSize: number = 3;
+    private crossoverProbability: number = 0.7;
+    private crossoverPoint: number = 0.5;
+    private mutateProbability: number = 0.07;
     constructor(config: GeneticConfig) {
         this.population_size = config.population_size;
         this.generations = config.generations;
         this.hidden_layers = config.hidden_layers;
         this.inputs = config.inputs;
         this.outputs = config.outputs;
+        this.activationMethod = config.activationMethod;
+        this.tournamentSize = config.tournamentSize;
+        this.crossoverProbability = config.crossoverProbability;
+        this.crossoverPoint = config.crossoverPoint;
+        this.mutateProbability = config.mutateProbability;
     }
 
     initialize(): Array<Network> {
@@ -36,8 +51,6 @@ export class GeneticOptimalization {
         }
         for (var i = 0; i < this.population_size; i++) {
             this.population.push(new Network(config));
-
-
         }
         this.population.forEach(network => {
             network.create();
@@ -45,28 +58,69 @@ export class GeneticOptimalization {
         return this.population;
     }
 
-    grade(network: Network): number {
-        return network.error();
+    grade(): number {
+        var sum = 0;
+        for (var i = 0; i < this.population.length; i++) {
+            this.population[i].calculate();
+            sum += this.population[i].error();
+        }
+        return sum / this.population.length;
     }
 
-    selection() {
-        this.population.forEach((network, index) => {
-            network.calculate();
-            console.log("Network " + index + " grade: " + this.grade(network) + "\n");
-        })
+    selection(n: number): Array<Network> {
+        var newPopulation = new Array<Network>();
+        var bestIndividual = {} as Network;
+        var tournamentIndividuals = new Array<Network>();
+        for (var i = 0; i < this.population.length; i++) {
+            tournamentIndividuals = new Array<Network>();
+            while (tournamentIndividuals.length <= n) {
+                tournamentIndividuals.push(this.population[Math.floor(Math.random() * this.population.length)]);
+            }
+            bestIndividual = tournamentIndividuals.values().next().value;
+            tournamentIndividuals.forEach(individual => {
+                if (individual.error() < bestIndividual.error()) bestIndividual = individual;
+            });
+            newPopulation.push(bestIndividual);
+        }
+        return newPopulation;
     }
 
-    crossover() {
 
+    crossover(propability: number, point: number) {
+        for (var i = 0; i < this.population.length; i += 2) {
+            var mother = this.population[i].getWeights();
+            var father = this.population[(i + 1) % this.population.length].getWeights();
+            if (mother.length !== father.length) throw new Error("Individuals weights size are not equal");
+            var divide = Math.floor(this.population[i].getWeights().length * point);
+            var temp;
+            for (var j = divide; j < mother.length; j++) {
+                if (propability >= random()) {
+                    temp = mother[j];
+                    mother[j] = father[j];
+                    father[j] = temp;
+                }
+            }
+            this.population[i].setWeights(mother);
+            this.population[(i + 1) % this.population.length].setWeights(father);
+        }
     }
 
-    mutate() {
-
+    mutate(propability: number) {
+        for (var i = 0; i < this.population.length; i++) {
+            if (propability <= random()) {
+                var index = Math.floor(random() * this.population[i].getWeights().length);
+                this.population[i].getWeights()[index] = Math.abs(1 - this.population[i].getWeights()[index]);
+            }
+        }
     }
 
     startEvolving() {
-        if (this.population.length <= 0) throw new Error("Cannot find any population");
-        this.selection();
+        for (let i = 0; i < this.generations; i++) {
+            console.log("Generation: " + i + ". Score: " + this.grade());
+            this.population = this.selection(this.tournamentSize);
+            this.crossover(this.crossoverProbability, this.crossoverPoint);
+            this.mutate(this.mutateProbability);
+        }
     }
 
 
