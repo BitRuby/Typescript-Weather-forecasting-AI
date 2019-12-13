@@ -1,5 +1,6 @@
 export const random = (min: number = 0, max: number = 1): number => {
-    return Number(((Math.random() * max) + min).toPrecision(4));
+    return (Math.random() * (max-min)) + min;
+
 }
 
 const random_seed = [0.321, 0.655, 0.230, 0.976, 0.003, 0.142, 0.769, 0.865];
