@@ -1,4 +1,4 @@
-import { random, randomSeed, sigmoid } from "./Utilis";
+import { random, sigmoid } from "./Utilis";
 
 interface NetworkConfig {
     hidden_layers: Array<number>;

@@ -29,9 +29,7 @@ export class Data {
   save = async (path: string) => {
     try {
       var csv = json(this.data, { fields: Object.keys(this.data[0]) });
-      fs.writeFile(path, csv, function(err: string) {
-        console.log(err);
-      });
+      fs.writeFile(path, csv, ()=>{});
     } catch (error) {
       throw new Error(error);
     }
