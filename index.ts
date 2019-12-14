@@ -1,13 +1,14 @@
 import { GeneticOptimalization } from "./GeneticOptimalization";
+import { Data } from "./Data";
 
-const main = () => {
+const main = async () => {
 
     const config = {
-        population_size: 15, //Size of population
+        population_size: 1500, //Size of population
         generations: 100, //Number of generations
-        hidden_layers: [8], //Value represents number of neurons in each hidden layer
-        inputs: [1, 0.2], //Input values of network
-        outputs: [0,0.95], //Expected outputs in network
+        hidden_layers: [4,4], //Value represents number of neurons in each hidden layer
+        inputs: [1,1,1,1], //Input values of network
+        outputs: [0,0,0,0], //Expected outputs in network
         activationMethod: 'sigmoid', //Function of activation name
         tournamentSize: 5, //Number of individuals participate in each tournament 
         crossoverProbability: 0.5, //Crossover probability of two individuals
@@ -16,6 +17,16 @@ const main = () => {
         errorTolerance: 0.02 //Score stop criterium
     }
     const go = new GeneticOptimalization(config);
+    const dt = new Data();
+    await dt.load("data/test.csv");
+    dt.encode();
+    await dt.save("data/encoded/test.csv");
+    await dt.load("data/train.csv");
+    dt.encode();
+    await dt.save("data/encoded/train.csv");
+    await dt.load("data/verify.csv");
+    dt.encode();
+    await dt.save("data/encoded/verify.csv");
     go.initialize();
     go.startEvolving();
 }
