@@ -59,7 +59,7 @@ export class Network {
         for (var i = 0; i < this.layers.length; i++) {
             for (var j = 0; j < this.layers[i + 1]; j++) {
                 for (var k = 0; k < this.layers[i]; k++) {
-                    this.weights.push(random(-10,10));
+                    this.weights.push(random(-5,5));
                 }
             }
         }

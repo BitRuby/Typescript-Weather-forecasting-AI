@@ -12,6 +12,7 @@ interface GeneticConfig {
   crossoverProbability: number;
   crossoverPoint: number;
   mutateProbability: number;
+  errorTolerance: number;
 }
 export class GeneticOptimalization {
   private population: Array<Network> = [];
@@ -25,6 +26,7 @@ export class GeneticOptimalization {
   private crossoverProbability: number = 0.7;
   private crossoverPoint: number = 0.5;
   private mutateProbability: number = 0.07;
+  private errorTolerance: number = 0.02;
   constructor(config: GeneticConfig) {
     this.population_size = config.population_size;
     this.generations = config.generations;
@@ -36,6 +38,7 @@ export class GeneticOptimalization {
     this.crossoverProbability = config.crossoverProbability;
     this.crossoverPoint = config.crossoverPoint;
     this.mutateProbability = config.mutateProbability;
+    this.errorTolerance = config.errorTolerance;
   }
 
   initialize(): Array<Network> {
@@ -45,7 +48,7 @@ export class GeneticOptimalization {
         "\nGenerations: " +
         this.generations +
         "\nHidden layers in each network: " +
-        this.hidden_layers +
+        (this.hidden_layers.length) +
         "\nInputs in networks: " +
         this.inputs +
         "\nOutputs in network: " +
@@ -72,6 +75,18 @@ export class GeneticOptimalization {
       sum += this.population[i].error();
     }
     return sum / this.population.length;
+  }
+
+  best(): number {
+    this.population[0].calculate();
+    var minError = this.population[0].error();
+    for (var i = 1; i < this.population.length; i++) {
+      this.population[i].calculate();
+      if (minError > this.population[i].error()) {
+        minError = this.population[i].error()
+      }
+    }
+    return minError;
   }
 
   selection(n: number): Array<Network> {
@@ -136,10 +151,12 @@ export class GeneticOptimalization {
 
   startEvolving() {
     for (let i = 0; i < this.generations; i++) {
-      console.log("Generation: " + i + ". Score: " + this.grade());
+      console.log("Generation: " + i + ". Score: " + this.best());
+      if (this.best() < this.errorTolerance) break;
       this.selection(this.tournamentSize);
       this.crossover(this.crossoverProbability, this.crossoverPoint);
       this.mutate(this.mutateProbability);
+
     }
   }
 }
