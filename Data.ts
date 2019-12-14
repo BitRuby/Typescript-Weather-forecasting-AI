@@ -20,12 +20,10 @@ export class Data {
       throw new Error("Could not find any data");
     }
     var keys = Object.keys(this.data[0]);
-    console.log(keys);
     for (let i = 1; i < keys.length; i++) {
       const extremes = findExtremes(this.data, keys[i]);
       normalizeAll(this.data, keys[i], extremes);
     }
-    console.log(this.data);
   };
 
   save = async (path: string) => {

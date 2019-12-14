@@ -17,9 +17,9 @@ export const renormalize = (Tn: number, Tmin: number, Tmax: number) => {
 };
 
 export const findExtremes = (data: Array<any>, column: string): Array<number> => {
-  let min = parseInt(data[1][column]);
-  let max = parseInt(data[1][column]);
-  for (let i = 2; i < data.length; i++) {
+  let min = parseInt(data[0][column]);
+  let max = parseInt(data[0][column]);
+  for (let i = 1; i < data.length; i++) {
     if (parseInt(data[i][column]) < min) min = parseInt(data[i][column]);
     if (parseInt(data[i][column]) > max) max = parseInt(data[i][column]);
   }
@@ -31,7 +31,7 @@ export const normalizeAll = (
   column: string,
   extremes: Array<number>
 ) => {
-  for (let i = 1; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     data[i][column] = normalize(data[i][column], extremes[0], extremes[1]);
   }
 };
