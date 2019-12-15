@@ -78,15 +78,15 @@ export class GeneticOptimalization {
     });
   }
 
-  setAllInputs(inputs: ObjectStrings) {
+  setAllInputs(inputs: ObjectStrings, separate: number) {
     this.population.forEach(p => {
-      p.setInputs(inputs, this.separate);
+      p.setInputs(inputs, separate);
     });
   }
 
-  setAllOutputs(outputs: ObjectStrings) {
+  setAllOutputs(outputs: ObjectStrings, separate: number) {
     this.population.forEach(p => {
-      p.setOutputs(outputs, this.separate);
+      p.setOutputs(outputs, separate);
     });
   }
 
@@ -167,8 +167,8 @@ export class GeneticOptimalization {
     let bestPopulation = {};
     for (let j = 0; j < this.data.length - 1 && stopCriterium; j++) {
       console.log("Dataset: " + j);
-      this.setAllInputs(this.data[j]);
-      this.setAllOutputs(this.data[j+1]);
+      this.setAllInputs(this.data[j], this.separate);
+      this.setAllOutputs(this.data[j+1], this.separate);
       this.createAll();
       for (let i = 0; i < this.generations; i++) {
         console.log("Generation: " + i + ". Score: " + this.best());
