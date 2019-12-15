@@ -39,17 +39,21 @@ export class Network {
     this.weights = [...weights];
   }
 
-  setInputs(inputs: ObjectStrings) {
+  setInputs(inputs: ObjectStrings, separate: number = 0) {
     this.inputs = [];
-    Object.keys(inputs).forEach(key => {
-      this.inputs.push(inputs[key]);
+    Object.keys(inputs).forEach((key, index) => {
+        if (separate === 0 || index < separate) {
+            this.inputs.push(inputs[key]);
+        }
     });
   }
 
-  setOutputs(outputs: ObjectStrings) {
+  setOutputs(outputs: ObjectStrings, separate: number = 0) {
     this.outputs = [];
-    Object.keys(outputs).forEach(key => {
-      this.outputs.push(outputs[key]);
+    Object.keys(outputs).forEach((key,index) => {
+        if (separate === 0 || index >= separate) {
+            this.outputs.push(outputs[key]);
+        }
     });
   }
 
@@ -66,9 +70,6 @@ export class Network {
   }
 
   create() {
-    if (this.weights.length > 0) {
-      throw new Error("Network already created");
-    }
     if (this.inputs.length === 0) {
       throw new Error("Set inputs of network before create");
     }
@@ -78,6 +79,8 @@ export class Network {
     if (this.weights_range.length !== 2) {
       throw new Error("Random weights range is not set or invalid");
     }
+    this.layers = [];
+    this.weights = [];
     this.layers.push(this.inputs.length);
     this.layers = [...this.layers, ...this.hidden_layers];
     this.layers.push(this.outputs.length);

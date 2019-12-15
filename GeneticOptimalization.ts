@@ -13,6 +13,7 @@ interface GeneticConfig {
   mutate_probability: number;
   error_tolerance: number;
   weights_range: Array<number>;
+  separate: number;
 }
 export class GeneticOptimalization {
   private population: Array<Network> = [];
@@ -23,10 +24,10 @@ export class GeneticOptimalization {
   private activation_method: string = "sigmoid";
   private tournament_size: number = 3;
   private crossover_probability: number = 0.7;
-  private crossover_point: number = 0.5;
   private mutate_probability: number = 0.07;
   private error_tolerance: number = 0.02;
   private weights_range: Array<number> = [-5, 5];
+  private separate: number = 0;
   constructor(config: GeneticConfig) {
     this.population_size = config.population_size;
     this.generations = config.generations;
@@ -38,6 +39,7 @@ export class GeneticOptimalization {
     this.mutate_probability = config.mutate_probability;
     this.error_tolerance = config.error_tolerance;
     this.weights_range = config.weights_range;
+    this.separate = config.separate;
   }
 
   initialize(): Array<Network> {
@@ -78,13 +80,13 @@ export class GeneticOptimalization {
 
   setAllInputs(inputs: ObjectStrings) {
     this.population.forEach(p => {
-      p.setInputs(inputs);
+      p.setInputs(inputs, this.separate);
     });
   }
 
   setAllOutputs(outputs: ObjectStrings) {
     this.population.forEach(p => {
-      p.setOutputs(outputs);
+      p.setOutputs(outputs, this.separate);
     });
   }
 
@@ -162,13 +164,16 @@ export class GeneticOptimalization {
 
   startEvolving() {
     let stopCriterium: boolean = true;
+    let bestPopulation = {};
     for (let j = 0; j < this.data.length - 1 && stopCriterium; j++) {
+      console.log("Dataset: " + j);
       this.setAllInputs(this.data[j]);
-      this.setAllOutputs(this.data[j]);
-      if (j === 0) this.createAll();
+      this.setAllOutputs(this.data[j+1]);
+      this.createAll();
       for (let i = 0; i < this.generations; i++) {
         console.log("Generation: " + i + ". Score: " + this.best());
         if (this.best() < this.error_tolerance) {
+          bestPopulation = this.population;
           stopCriterium = false;
           break;
         }
