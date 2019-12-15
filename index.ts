@@ -18,15 +18,9 @@ const main = async () => {
     }
     const go = new GeneticOptimalization(config);
     const dt = new Data();
-    await dt.load("data/test.csv");
+    await dt.load("data/data.csv");
     dt.encode();
-    await dt.save("data/encoded/test.csv");
-    await dt.load("data/train.csv");
-    dt.encode();
-    await dt.save("data/encoded/train.csv");
-    await dt.load("data/verify.csv");
-    dt.encode();
-    await dt.save("data/encoded/verify.csv");
+    await dt.divide("0.6:0.2:0.2");
     go.initialize();
     go.startEvolving();
 }
