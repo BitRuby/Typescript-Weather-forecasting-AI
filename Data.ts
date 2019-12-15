@@ -1,13 +1,14 @@
 import { findExtremes, normalizeAll } from "./Utilis";
+import { ObjectStrings } from "./ObjectStrings";
 const csv = require("csvtojson");
 const json = require("json2csv").parse;
 const fs = require("fs");
 
 export class Data {
-  private data: Array<Object> = [];
-  private train: Array<Object> = [];
-  private test: Array<Object> = [];
-  private verify: Array<Object> = [];
+  private data: Array<ObjectStrings> = [];
+  private train: Array<ObjectStrings> = [];
+  private test: Array<ObjectStrings> = [];
+  private verify: Array<ObjectStrings> = [];
   constructor() {}
 
   load = async (path: string) => {
@@ -18,7 +19,7 @@ export class Data {
     }
   };
 
-  getData = (): Array<Object> => {
+  getData = (): Array<ObjectStrings> => {
     if (this.data.length <= 0) {
       throw new Error("Could not find any data");
     }

@@ -1,44 +1,43 @@
 import { Network } from "./Network";
 import { random } from "./Utilis";
+import { ObjectStrings } from "./ObjectStrings";
 
 interface GeneticConfig {
   population_size: number;
   generations: number;
   hidden_layers: Array<number>;
-  inputs: Array<number>;
-  outputs: Array<number>;
-  activationMethod: string;
-  tournamentSize: number;
-  crossoverProbability: number;
-  crossoverPoint: number;
-  mutateProbability: number;
-  errorTolerance: number;
+  data: Array<ObjectStrings>;
+  activation_method: string;
+  tournament_size: number;
+  crossover_probability: number;
+  mutate_probability: number;
+  error_tolerance: number;
+  weights_range: Array<number>;
 }
 export class GeneticOptimalization {
   private population: Array<Network> = [];
   private population_size: number = 10;
   private generations: number = 20;
   private hidden_layers: Array<number> = [];
-  private inputs: Array<number> = [1, 1];
-  private outputs: Array<number> = [1, 0];
-  private activationMethod: string = "sigmoid";
-  private tournamentSize: number = 3;
-  private crossoverProbability: number = 0.7;
-  private crossoverPoint: number = 0.5;
-  private mutateProbability: number = 0.07;
-  private errorTolerance: number = 0.02;
+  private data: Array<ObjectStrings> = [];
+  private activation_method: string = "sigmoid";
+  private tournament_size: number = 3;
+  private crossover_probability: number = 0.7;
+  private crossover_point: number = 0.5;
+  private mutate_probability: number = 0.07;
+  private error_tolerance: number = 0.02;
+  private weights_range: Array<number> = [-5, 5];
   constructor(config: GeneticConfig) {
     this.population_size = config.population_size;
     this.generations = config.generations;
     this.hidden_layers = config.hidden_layers;
-    this.inputs = config.inputs;
-    this.outputs = config.outputs;
-    this.activationMethod = config.activationMethod;
-    this.tournamentSize = config.tournamentSize;
-    this.crossoverProbability = config.crossoverProbability;
-    this.crossoverPoint = config.crossoverPoint;
-    this.mutateProbability = config.mutateProbability;
-    this.errorTolerance = config.errorTolerance;
+    this.data = config.data;
+    this.activation_method = config.activation_method;
+    this.tournament_size = config.tournament_size;
+    this.crossover_probability = config.crossover_probability;
+    this.mutate_probability = config.mutate_probability;
+    this.error_tolerance = config.error_tolerance;
+    this.weights_range = config.weights_range;
   }
 
   initialize(): Array<Network> {
@@ -48,23 +47,17 @@ export class GeneticOptimalization {
         "\nGenerations: " +
         this.generations +
         "\nHidden layers in each network: " +
-        (this.hidden_layers.length) +
-        "\nInputs in networks: " +
-        this.inputs +
-        "\nOutputs in network: " +
-        this.outputs
+        this.hidden_layers.length +
+        "\nNumber of inputs/outputs in networks: " +
+        Object.keys(this.data[0]).length
     );
     var config = {
       hidden_layers: this.hidden_layers,
-      inputs: this.inputs,
-      outputs: this.outputs
+      weights_range: this.weights_range
     };
     for (var i = 0; i < this.population_size; i++) {
       this.population.push(new Network(config));
     }
-    this.population.forEach(network => {
-      network.create();
-    });
     return this.population;
   }
 
@@ -77,13 +70,31 @@ export class GeneticOptimalization {
     return sum / this.population.length;
   }
 
+  createAll() {
+    this.population.forEach(network => {
+      network.create();
+    });
+  }
+
+  setAllInputs(inputs: ObjectStrings) {
+    this.population.forEach(p => {
+      p.setInputs(inputs);
+    });
+  }
+
+  setAllOutputs(outputs: ObjectStrings) {
+    this.population.forEach(p => {
+      p.setOutputs(outputs);
+    });
+  }
+
   best(): number {
     this.population[0].calculate();
     var minError = this.population[0].error();
     for (var i = 1; i < this.population.length; i++) {
       this.population[i].calculate();
       if (minError > this.population[i].error()) {
-        minError = this.population[i].error()
+        minError = this.population[i].error();
       }
     }
     return minError;
@@ -111,10 +122,10 @@ export class GeneticOptimalization {
     return newPopulation;
   }
 
-  crossover(propability: number, point: number) {
+  crossover(propability: number) {
     for (let j = 0; j < this.population.length; j += 2) {
       let size = this.population[j].getWeights().length;
-      for (let i = Math.floor(size * point); i < size; i++) {
+      for (let i = Math.floor(size * random(0, 1)); i < size; i++) {
         if (propability >= random()) {
           let temp = this.population[j].getWeight(i);
           this.population[j].setWeight(
@@ -150,13 +161,21 @@ export class GeneticOptimalization {
   }
 
   startEvolving() {
-    for (let i = 0; i < this.generations; i++) {
-      console.log("Generation: " + i + ". Score: " + this.best());
-      if (this.best() < this.errorTolerance) break;
-      this.selection(this.tournamentSize);
-      this.crossover(this.crossoverProbability, this.crossoverPoint);
-      this.mutate(this.mutateProbability);
-
+    let stopCriterium: boolean = true;
+    for (let j = 0; j < this.data.length - 1 && stopCriterium; j++) {
+      this.setAllInputs(this.data[j]);
+      this.setAllOutputs(this.data[j]);
+      if (j === 0) this.createAll();
+      for (let i = 0; i < this.generations; i++) {
+        console.log("Generation: " + i + ". Score: " + this.best());
+        if (this.best() < this.error_tolerance) {
+          stopCriterium = false;
+          break;
+        }
+        this.selection(this.tournament_size);
+        this.crossover(this.crossover_probability);
+        this.mutate(this.mutate_probability);
+      }
     }
   }
 }
