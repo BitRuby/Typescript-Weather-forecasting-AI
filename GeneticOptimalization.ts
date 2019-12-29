@@ -1,6 +1,8 @@
 import { Network } from "./Network";
 import { random } from "./Utilis";
 import { ObjectStrings } from "./ObjectStrings";
+import { Data } from "./Data";
+import { Stats } from "./Stats";
 
 interface GeneticConfig {
   population_size: number;
@@ -90,17 +92,71 @@ export class GeneticOptimalization {
     });
   }
 
-  best(): number {
-    this.population[0].calculate();
-    var minError = this.population[0].error();
+  calculate() {
+    this.population.forEach(p => {
+      p.calculate();
+    });
+  }
+
+  addError() {
+    this.population.forEach(p => {
+      p.addError(p.error());
+    });
+  }
+
+  clearError() {
+    this.population.forEach(p => {
+      p.clearSumError();
+    });
+  }
+
+  findMinError(): number {
+    let minError = this.population[0].getSumError();
     for (var i = 1; i < this.population.length; i++) {
-      this.population[i].calculate();
-      if (minError > this.population[i].error()) {
-        minError = this.population[i].error();
+      if (minError > this.population[i].getSumError()) {
+        minError = this.population[i].getSumError();
       }
     }
     return minError;
   }
+
+  findBestNetwork(): Network {
+    let minError = this.population[0].getSumError();
+    let network = this.population[0];
+    for (var i = 1; i < this.population.length; i++) {
+      if (minError > this.population[i].getSumError()) {
+        minError = this.population[i].getSumError();
+        network = this.population[i];
+      }
+    }
+    return network;
+  }
+
+  // best(): number {
+  //   this.population[0].calculate();
+  //   var minError = this.population[0].error();
+  //   for (var i = 1; i < this.population.length; i++) {
+  //     this.population[i].calculate();
+  //     if (minError > this.population[i].error()) {
+  //       minError = this.population[i].error();
+  //     }
+  //   }
+  //   return minError;
+  // }
+
+  // bestNetwork(): Network {
+  //   this.population[0].calculate();
+  //   var minError = this.population[0].error();
+  //   var network = this.population[0];
+  //   for (var i = 1; i < this.population.length; i++) {
+  //     this.population[i].calculate();
+  //     if (minError > this.population[i].error()) {
+  //       minError = this.population[i].error();
+  //       network = this.population[i];
+  //     }
+  //   }
+  //   return network;
+  // }
 
   selection(n: number): Array<Network> {
     var newPopulation = new Array<Network>();
@@ -115,7 +171,7 @@ export class GeneticOptimalization {
       }
       bestIndividual = tournamentIndividuals.values().next().value;
       tournamentIndividuals.forEach(individual => {
-        if (individual.error() < bestIndividual.error())
+        if (individual.getSumError() < bestIndividual.getSumError())
           bestIndividual = individual;
       });
       newPopulation.push(bestIndividual);
@@ -163,24 +219,46 @@ export class GeneticOptimalization {
   }
 
   startEvolving() {
+    const data = new Data();
+    const stats = new Stats();
     let stopCriterium: boolean = true;
-    let bestPopulation = {};
-    for (let j = 0; j < this.data.length - 1 && stopCriterium; j++) {
-      console.log("Dataset: " + j);
-      this.setAllInputs(this.data[j], this.separate);
-      this.setAllOutputs(this.data[j+1], this.separate);
-      this.createAll();
-      for (let i = 0; i < this.generations; i++) {
-        console.log("Generation: " + i + ". Score: " + this.best());
-        if (this.best() < this.error_tolerance) {
-          bestPopulation = this.population;
-          stopCriterium = false;
-          break;
-        }
-        this.selection(this.tournament_size);
-        this.crossover(this.crossover_probability);
-        this.mutate(this.mutate_probability);
+    for (let i = 0; i < this.generations && stopCriterium; i++) {
+      for (let j = 0; j < this.data.length - 1; j++) {
+        this.setAllInputs(this.data[j], this.separate);
+        this.setAllOutputs(this.data[j + 1], this.separate);
+        if (i === 0) this.createAll();
+        this.calculate();
+        this.addError();
       }
+      stats.prompt(i, this.findMinError());
+      this.clearError();
+      this.selection(this.tournament_size);
+      this.crossover(this.crossover_probability);
+      this.mutate(this.mutate_probability);
     }
   }
+
+  // startEvolving() {
+  //   const data = new Data();
+  //   let stopCriterium: boolean = true;
+  //   let bestPopulation = {};
+  //   for (let j = 0; j < this.data.length - 1 && stopCriterium; j++) {
+  //     console.log("Dataset: " + j);
+  //     this.setAllInputs(this.data[j], this.separate);
+  //     this.setAllOutputs(this.data[j+1], this.separate);
+  //     this.createAll();
+  //     for (let i = 0; i < this.generations; i++) {
+  //       console.log("Generation: " + i + ". Score: " + this.best());
+  //       if (this.best() < this.error_tolerance) {
+  //         bestPopulation = this.population;
+  //         data.save("data/trained_network.csv", this.bestNetwork());
+  //         stopCriterium = false;
+  //         break;
+  //       }
+  //       this.selection(this.tournament_size);
+  //       this.crossover(this.crossover_probability);
+  //       this.mutate(this.mutate_probability);
+  //     }
+  //   }
+  // }
 }

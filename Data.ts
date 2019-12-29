@@ -4,6 +4,8 @@ const csv = require("csvtojson");
 const json = require("json2csv").parse;
 const fs = require("fs");
 
+type dataType = Array<Object> | Object;
+
 export class Data {
   private data: Array<ObjectStrings> = [];
   private train: Array<ObjectStrings> = [];
@@ -73,9 +75,14 @@ export class Data {
     await this.save("data/encoded/verify.csv", this.verify);
   };
 
-  save = async (path: string, data: Array<Object> = this.data) => {
+
+
+  save = async (path: string, data: dataType = this.data) => {
     try {
-      var csv = json(data, { fields: Object.keys(data[0]) });
+      if (typeof data === "object") 
+        var csv = json(data, { fields: Object.keys(data) });
+      else 
+        var csv = json(data, { fields: Object.keys(data[0]) });
       fs.writeFile(path, csv, () => {});
     } catch (error) {
       throw new Error(error);

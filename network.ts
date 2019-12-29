@@ -14,9 +14,22 @@ export class Network {
   private hidden_layers: Array<number> = [];
   private weights_range: Array<number> = [];
   private matrix: Array<Array<number>> = [[]];
+  private sumError: number = 0;
   constructor(config: NetworkConfig) {
     this.hidden_layers = config.hidden_layers;
     this.weights_range = config.weights_range;
+  }
+
+  addError(number: number) {
+    this.sumError += number;
+  }
+
+  clearSumError() {
+    this.sumError = 0;
+  }
+
+  getSumError(): number {
+    return this.sumError;
   }
 
   getWeights(): Array<number> {
