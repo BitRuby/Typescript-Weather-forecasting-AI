@@ -75,8 +75,14 @@ export class GeneticOptimalization {
   }
 
   createAll() {
-    this.population.forEach(network => {
-      network.create();
+    this.population.forEach(p => {
+      p.create();
+    });
+  }
+
+  generateAllArrays() {
+    this.population.forEach(p => {
+      p.gen2dArray();
     });
   }
 
@@ -223,10 +229,11 @@ export class GeneticOptimalization {
     const stats = new Stats();
     let stopCriterium: boolean = true;
     for (let i = 0; i < this.generations && stopCriterium; i++) {
-      for (let j = 0; j < this.data.length - 1; j++) {
+      for (let j = 0; j < 2 /*this.data.length - 1*/; j++) {
         this.setAllInputs(this.data[j], this.separate);
         this.setAllOutputs(this.data[j + 1], this.separate);
         if (i === 0) this.createAll();
+        else this.generateAllArrays();
         this.calculate();
         this.addError();
       }

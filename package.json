@@ -33,7 +33,9 @@
     "ext": "ts"
   },
   "dependencies": {
+    "@types/mathjs": "^6.0.2",
     "csvtojson": "^2.0.10",
-    "json2csv": "^4.5.4"
+    "json2csv": "^4.5.4",
+    "mathjs": "^6.2.5"
   }
 }

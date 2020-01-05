@@ -21,6 +21,19 @@ export class Data {
     }
   };
 
+  separate = (data: Array<ObjectStrings>, first: number, last: number) => {
+    let array = new Array<any>();
+    for (let i = 0; i < data.length; i++) {
+      array[i] = [];
+      Object.keys(data[i]).forEach((key,index) => {
+        if (index >= first && index <= last) {
+          array[i].push(Number(data[i][key]));
+        }
+      })
+    }
+    return array;
+  }
+
   getData = (): Array<ObjectStrings> => {
     if (this.data.length <= 0) {
       throw new Error("Could not find any data");

@@ -8,6 +8,20 @@ export const randomSeed = (number: number) => {
   return Number(((number * random_seed[number % 7]) % 1).toPrecision(4));
 };
 
+export const randomInt = (min: number = 0, max: number = 1): number => {
+  return Math.floor(Math.random() * (max - min) + min);
+};
+
+export const randomUnique = (n: number, min: number = 0, max: number = 1): Array<number> => {
+  let arr = new Array<number>();
+  let r;
+  while (arr.length !== n) {
+    r = Math.floor(random(min, max))
+    if (arr.indexOf(r) === -1) arr.push(r);
+  }
+  return arr;
+}
+
 export const normalize = (T: number, Tmin: number, Tmax: number) => {
   return Tmax === Tmin ? 1 : (T - Tmin) / (Tmax - Tmin);
 };

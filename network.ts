@@ -52,6 +52,14 @@ export class Network {
     this.weights = [...weights];
   }
 
+  getInputs(): Array<number> {
+    return this.inputs;
+  }
+
+  getOutputs(): Array<number> {
+    return this.outputs;
+  }
+
   setInputs(inputs: ObjectStrings, separate: number = 0) {
     this.inputs = [];
     Object.keys(inputs).forEach((key, index) => {
