@@ -1,6 +1,6 @@
 import { random, multiply, subtract, MathType } from "mathjs";
 import { sigmoid } from "./Utilis";
-const rand_range = [-15, 15];
+const rand_range = [-1, 1];
 
 export class NetworkNew {
   private synapses: Array<any> = new Array<any>();
@@ -25,7 +25,7 @@ export class NetworkNew {
       });
     }
     this.output = subtract(
-      target,
+      target as Array<any>,
       this.layers[this.layers.length - 1]
     ) as Array<any>;
     this.errorAcc += Math.abs(

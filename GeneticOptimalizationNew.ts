@@ -31,13 +31,13 @@ export class GeneticOptimalizationNew {
   synapses() {
     this.population.forEach(e => {
       console.log(e.getSynapses());
-    })
+    });
   }
 
   errors() {
     this.population.forEach(e => {
       console.log(e.getError());
-    })
+    });
   }
 
   length() {
@@ -62,6 +62,14 @@ export class GeneticOptimalizationNew {
     );
   }
 
+  best(): number {
+    return Math.min(
+      ...this.population.map(e => {
+        return e.getError();
+      })
+    );
+  }
+
   selection(n: number) {
     let newPopulation = new Array<NetworkNew>();
     let select, best: NetworkNew;
@@ -72,7 +80,7 @@ export class GeneticOptimalizationNew {
     best = this.population[0];
     this.population.forEach(e => {
       if (e.getError() < best.getError()) best = e;
-    })
+    });
     newPopulation.push(best);
     while (newPopulation.length !== this.population.length) {
       select = randomUnique(n, 0, this.population.length - 1);
@@ -116,23 +124,17 @@ export class GeneticOptimalizationNew {
   evolve = async () => {
     const data = new Data();
     await data.load("data/encoded/train.csv");
-    let inputs = data.separate(data.getData(), 0, 3);
-    let targets = data.separate(data.getData(), 4, 10);
-
-    for (let g = 0; g < 15; g++) {
+    let inputs = data.separate(data.getData(), 0, 11).slice(0,1000);
+    let targets = data.separate(data.getData(), 4, 4).slice(0,1000);
+    for (let g = 0; g < this.config.nGenerations; g++) {
       for (let i = 0; i < inputs.length-1; i++) {
         this.train(inputs[i], targets[i+1]);
       }
       console.log("Generation: " + g);
       this.selection(this.config.selectedIndividuals);
-      this.crossover(
-        this.config.crossoverPoint,
-        this.config.crossoverProbability
-      );
-       this.mutate(this.config.mutateProbability);
-
-       
-      console.log("Population score (less=better): " + this.grade());
+      this.crossover(random(), this.config.crossoverProbability);
+      this.mutate(this.config.mutateProbability);
+      console.log("Population score (less=better): " + this.best());
       this.reset();
     }
   };
