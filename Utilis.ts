@@ -26,6 +26,16 @@ export const normalize = (T: number, Tmin: number, Tmax: number) => {
   return Tmax === Tmin ? 1 : (T - Tmin) / (Tmax - Tmin);
 };
 
+export function copy(o:any) {
+  var output: any, v, key;
+  output = Array.isArray(o) ? [] : {};
+  for (key in o) {
+      v = o[key];
+      output[key] = (typeof v === "object") ? copy(v) : v;
+  }
+  return output;
+}
+
 export const renormalize = (Tn: number, Tmin: number, Tmax: number) => {
   return Tn * (Tmax - Tmin) + Tmin;
 };

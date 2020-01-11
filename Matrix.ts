@@ -1,5 +1,4 @@
-import { size } from "mathjs";
-import { randomInt, random } from "./Utilis";
+import { randomInt } from "./Utilis";
 
 export class Matrix {
   static toVector(e: any): any {
@@ -42,7 +41,7 @@ export class Matrix {
   static oneIndexSwap(m: Array<any>) {
     let v_2d = Matrix.toVector(m);
     let v_1d = Matrix.toVector(v_2d);
-    v_1d[randomInt(0, v_1d.length-1)] = (random() <= 0.5) ? v_1d[0] : v_1d[v_1d.length - 1];
+    v_1d[randomInt(0, v_1d.length-1)] = v_1d[randomInt(0, v_1d.length-1)];
     let vr_2d = Matrix.toMatrix(v_1d, v_2d);
     return Matrix.toMatrix(vr_2d, m);
   }
