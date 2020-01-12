@@ -4,6 +4,7 @@ import { randomUnique, random, randomInt, copy } from "./Utilis";
 import { Matrix } from "./Matrix";
 import { Data } from "./Data";
 import { Stats } from "./Stats";
+import { performance } from "perf_hooks";
 
 interface Config {
   size: number;
@@ -73,10 +74,10 @@ export class GeneticOptimalization {
   }
 
   bestNetwork(): Network {
-    let best = this.population[0];
+    let best = copy(this.population[0]);
     this.population.forEach(e => {
       if (e.getError() < best.getError()) {
-        best = e;
+        best = copy(e);
       }
     });
     return best;
@@ -139,10 +140,12 @@ export class GeneticOptimalization {
   evolve = async () => {
     const data = new Data();
     const stats = new Stats();
+    let t0: number, t1: number;
     await data.load("data/encoded/train.csv");
     let inputs = data.separate(data.getData(), 0, 11);
-    let targets = data.separate(data.getData(), 4, 4);
+    let targets = data.separate(data.getData(), 4, 6);
     for (let g = 0; g < this.config.nGenerations; g++) {
+      t0 = performance.now();
       for (let i = 0; i < inputs.length - 1; i++) {
         this.train(inputs[i], targets[i + 1]);
       }
@@ -153,18 +156,41 @@ export class GeneticOptimalization {
         this.config.crossoverProbability
       );
       this.mutate(this.config.mutateProbability);
-      stats.push((this.best() / inputs.length));
+      t1 = performance.now();
+      stats.pushScore(this.best() / inputs.length);
+      stats.pushTime(t1 - t0);
       console.log(
         "Population score (less=better): " + this.best() / inputs.length
       );
       if (this.best() / inputs.length <= this.config.stopCriterium) {
-        data.save("data/trained_network.csv", this.bestNetwork());
-        stats.save();
+        data.saveToJson("data/trained_network.json", this.bestNetwork());
+        stats.save("data/stats.csv");
         break;
       }
       this.reset();
     }
   };
 
-  verify = async () => {};
+  test = async () => {
+    const data = new Data();
+    const stats = new Stats();
+    const network = new Network();
+    let t0: number, t1: number;
+    await data.load("data/encoded/test.csv");
+    await data.readJson("data/trained_network.json");
+    let networkConfig = data.getJson();
+    network.setLayers(networkConfig.layers);
+    network.setSynapses(networkConfig.synapses);
+    let inputs = data.separate(data.getData(), 0, 11);
+    let targets = data.separate(data.getData(), 4, 6);
+    t0 = performance.now();
+    for (let i = 0; i < data.getData().length - 1; i++) {
+      network.train(inputs[i], targets[i + 1]);
+      stats.pushScore(network.getError() / inputs.length);
+      network.clearError();
+    }
+    t1 = performance.now(); 
+    stats.pushTime(t1 - t0);
+    stats.save("data/test_stats.csv");
+  };
 }

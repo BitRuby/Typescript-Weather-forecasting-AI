@@ -3,14 +3,17 @@ import { Data } from "./Data";
 export class Stats {
 
     log: Array<number> = new Array<number>();
-
-    save() {
+    time: Array<number> = new Array<number>();
+    save(path: string) {
         let data = new Data();
-        data.save("data/stats.csv", {error: this.log});
+        data.save(path, {error: this.log, time: this.time});
     }
 
-    push(e: number) {
+    pushScore(e: number) {
         this.log.push(e);
+    }
+    pushTime(e: number) {
+        this.time.push(e);
     }
 
 }

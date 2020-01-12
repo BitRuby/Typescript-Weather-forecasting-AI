@@ -8,7 +8,7 @@ export class Network {
   private output: Array<any> = new Array<any>();
   private errorAcc: number = 0;
 
-  constructor(layers: Array<number>) {
+  constructor(layers: Array<number> = []) {
     for (let i = 0; i < layers.length - 1; i++) {
       this.synapses.push(
         random([layers[i], layers[i + 1]], rand_range[0], rand_range[1])
@@ -39,6 +39,14 @@ export class Network {
 
   getSynapses(): Array<any> {
     return this.synapses;
+  }
+
+  getLayers(): Array<any> {
+    return this.layers;
+  }
+
+  setLayers(layers: Array<any>) {
+    this.layers = layers;
   }
 
   setSynapses(synapses: Array<any>) {
