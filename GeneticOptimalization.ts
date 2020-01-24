@@ -161,6 +161,12 @@ export class GeneticOptimalization {
         "[Train] Population score (less=better): " +
           this.best() / train_inputs.length
       );
+      if (this.best() / train_inputs.length <= this.config.stopCriterium) {
+        data.saveToJson("data/trained_network.json", this.bestNetwork());
+        stats.saveTrain("data/train_stats.csv");
+        stats.saveVerify("data/verify_stats.csv");
+        break;
+      }
       bestTrainedNetwork = this.bestNetwork();
       this.selection(this.config.selectedIndividuals);
       this.crossover(
