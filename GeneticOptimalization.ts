@@ -141,33 +141,15 @@ export class GeneticOptimalization {
     const data = new Data();
     const stats = new Stats();
     let t0: number, t1: number;
+    let bestTrainedNetwork: Network;
     await data.load("data/encoded/train.csv");
-    let train_inputs = data.separate(data.getData(), 0, 11);
-    let train_targets = data.separate(data.getData(), 4, 6);
+    const train_inputs = data.separate(data.getData(), 0, 11);
+    const train_targets = data.separate(data.getData(), 4, 4);
     await data.load("data/encoded/verify.csv");
-    let verify_inputs = data.separate(data.getData(), 0, 11);
-    let verify_targets = data.separate(data.getData(), 4, 6);
+    const verify_inputs = data.separate(data.getData(), 0, 11);
+    const verify_targets = data.separate(data.getData(), 4, 4);
     for (let g = 0; g < this.config.nGenerations; g++) {
       console.log("Generation: " + g);
-      t0 = performance.now();
-      for (let i = 0; i < verify_inputs.length - 1; i++) {
-        this.train(verify_inputs[i], verify_targets[i + 1]);
-      }
-      t1 = performance.now();
-      console.log(
-        "[Verify] Population score (less=better): " + this.best() / verify_inputs.length
-      );
-      if (g !== 0 && stats.getLastError() < this.best() / verify_inputs.length) {
-        stats.pushVerifyError(this.best() / verify_inputs.length);
-        stats.pushVerifyTime(t1 - t0);
-        data.saveToJson("data/trained_network.json", this.bestNetwork());
-        stats.saveTrain("data/train_stats.csv");
-        stats.saveVerify("data/verify_stats.csv");
-        break;
-      }
-      stats.pushVerifyError(this.best() / verify_inputs.length);
-      stats.pushVerifyTime(t1 - t0);
-      this.reset();
       t0 = performance.now();
       for (let i = 0; i < train_inputs.length - 1; i++) {
         this.train(train_inputs[i], train_targets[i + 1]);
@@ -176,22 +158,28 @@ export class GeneticOptimalization {
       stats.pushTrainError(this.best() / train_inputs.length);
       stats.pushTrainTime(t1 - t0);
       console.log(
-        "[Train] Population score (less=better): " + this.best() / train_inputs.length
+        "[Train] Population score (less=better): " +
+          this.best() / train_inputs.length
       );
-
+      bestTrainedNetwork = this.bestNetwork();
       this.selection(this.config.selectedIndividuals);
       this.crossover(
         this.config.crossoverPoint,
         this.config.crossoverProbability
       );
       this.mutate(this.config.mutateProbability);
-
-      if (this.best() / train_inputs.length <= this.config.stopCriterium) {
-        data.saveToJson("data/trained_network.json", this.bestNetwork());
-        stats.saveTrain("data/train_stats.csv");
-        stats.saveVerify("data/verify_stats.csv");
-        break;
+      this.reset();
+      t0 = performance.now();
+      for (let i = 0; i < verify_inputs.length - 1; i++) {
+        bestTrainedNetwork.train(verify_inputs[i], verify_targets[i + 1]);
       }
+      t1 = performance.now();
+      stats.pushVerifyError(bestTrainedNetwork.getError() / verify_inputs.length);
+      stats.pushVerifyTime(t1 - t0);
+      console.log(
+        "[Verify] Population score (less=better): " +
+        bestTrainedNetwork.getError() / verify_inputs.length
+      );
       this.reset();
     }
   };
@@ -207,7 +195,7 @@ export class GeneticOptimalization {
     network.setLayers(networkConfig.layers);
     network.setSynapses(networkConfig.synapses);
     let inputs = data.separate(data.getData(), 0, 11);
-    let targets = data.separate(data.getData(), 4, 6);
+    let targets = data.separate(data.getData(), 4, 4);
     t0 = performance.now();
     for (let i = 0; i < data.getData().length - 1; i++) {
       network.train(inputs[i], targets[i + 1]);
